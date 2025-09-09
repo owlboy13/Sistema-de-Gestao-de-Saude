@@ -1,5 +1,7 @@
 Sistema de Gestão de Saúde - Clínica Vida+
+
 📋 Sobre o Projeto
+
 Sistema de gestão desenvolvido para a Clínica Vida+ de São Lucas, resolvendo problemas de agendamento manual, organização de históricos médicos e geração de relatórios. O sistema utiliza arquivos JSON como banco de dados para simplificar o desenvolvimento e implementação.
 
 🚀 Funcionalidades Principais
