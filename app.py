@@ -3,15 +3,12 @@ from patients import Patients, view_statistics, find_patient
 
 
 class App:
-    def __init__(self, name=str(input("Digite o nome completo do paciente: ")),
-                  age=int(input("Digite a idade do paciente: ")),
-                  phone=str(input("Digite o telefone do paciente: "))):
-        self._name = name
-        self._age = age
-        self._phone = phone
+    def __init__(self,):
+        self._name = str(input("Digite o nome completo do paciente: "))
+        self._age = int(input("Digite a idade do paciente: "))
+        self._phone = str(input("Digite o telefone do paciente: "))
         self.options = None
 
-        
 
     def menu(self):
         while True:
