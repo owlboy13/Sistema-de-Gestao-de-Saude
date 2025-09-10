@@ -6,18 +6,29 @@ import os
 FILE_BASE = Path(__file__).parent / "register_patients.json"
 
 
+# Função para carregar Arquivo JSON
+def load_json():
+    try:
+        with open(FILE_BASE, 'r') as file_json:
+            dados = json.load(file_json)
+            return dados
+    except FileNotFoundError as e:
+        print("Arquivo JSON não encontrado, erro:", e)
+
+
 class Patients:
+    _name: str
+    _age: int
+    _phone: str = None
+
     def __init__(self,
-                 name: str,
-                 age: int,
-                 phone: str,
-                 data={"patients": [],
-                       "last_id": 0},
+                 name,
+                 age,
+                 phone,
                  id=0):
-        self._name = name
-        self._age = age
-        self._phone = phone
-        self._data = data
+        self.name = name
+        self.age = age
+        self.phone = phone
         self._id = id
 
     @property
@@ -41,49 +52,45 @@ class Patients:
 
     @age.setter
     def age(self, value):
-        if isinstance(value, str) and value:
+        if isinstance(value, int) and value:
             self._age = value
         else:
             raise ValueError("Erro no tipo de valor da idade")
 
     @phone.setter
     def phone(self, value):
-        if isinstance(value, str) and value:
-            self._phone = value
+        if len(value) != 11:
+            raise ValueError("o tamanho do número está errado")
         else:
-            raise ValueError("Erro no tipo de valor do telefone")
-
+            self._phone = value
+            
     # Método para cadastrar os atributos em um arquivo json
     def register(self):
         try:
-            self._data["last_id"] += 1
-            new_id = self._data["last_id"]
+            if os.path.exists(FILE_BASE):
+                # Carregar arquivo json antes de salvar novos registros
+                data = load_json()
+            else:
+                data = {"patients": [], "last_id": 0}
+
+            # Criando um novo registro de paciente
+            data["last_id"] += 1
+            new_id = data["last_id"]
             register_patients = {
                 "ID": new_id,
-                "name": self.name.strip(),
+                "name": self.name.strip().lower(),
                 "age": self.age,
                 "phone": self.phone.strip()
             }
 
-            self._data["patients"].append(register_patients)
+            data["patients"].append(register_patients)
 
             with open(FILE_BASE, 'w', encoding="utf-8") as file:
-                return json.dump(self._data, file,
+                return json.dump(data, file,
                                  ensure_ascii=False, indent=2)
 
         except (json.JSONDecodeError, FileNotFoundError) as e:
             print("Erro ao tentar registrar paciente no json: ", e)
-
-
-# Função para carregar Arquivo JSON
-def load_json():
-    try:
-        if os.path.exists(FILE_BASE):
-            with open(FILE_BASE, 'r') as file_json:
-                dados = json.load(file_json)
-                return dados
-    except FileNotFoundError as e:
-        print("Arquivo JSON não encontrado, erro:", e)
 
 
 # Função para Carregar o json e exibir as estatisticas exigidas
@@ -115,10 +122,12 @@ def view_statistics():
 
 
 # Função para buscar paciente pelo nome
-def find_patient(input_name=input("Digite o nome do Paciente: ")):
+def find_patient():
     '''
         Buscar Paciente pelo nome
     '''
+
+    input_name = input("Digite o nome do Paciente: ").lower()
     try:
         dados = load_json()
 
@@ -139,15 +148,15 @@ def find_patient(input_name=input("Digite o nome do Paciente: ")):
 
 
 if __name__ == "__main__":
-
-    paciente_01 = Patients("Anderson Luiz", 32, "83996208929")
-    paciente_02 = Patients("Maria", 65, "8399656565")
-    paciente_03 = Patients("Genival", 58, "83995595954")
+    # dados ficticios para teste
+    paciente_01 = Patients("Anderson", 32, "83999659911")
+    paciente_02 = Patients("Maria", 65, "83996565651")
+    paciente_03 = Patients("Genival", 58, "83995595541")
 
     paciente_01.register()
     paciente_02.register()
     paciente_03.register()
 
-    view_statistics()
+    paciente_04 = Patients("Fulano", 85, "83999559951").register()
 
-    find_patient()
+    view_statistics()
