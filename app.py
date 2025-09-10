@@ -2,7 +2,7 @@
 from patients import Patients, view_statistics, find_patient
 
 
-class Main:
+class App:
     def __init__(self, name=str(input("Digite o nome completo do paciente: ")),
                   age=int(input("Digite a idade do paciente: ")),
                   phone=str(input("Digite o telefone do paciente: "))):
