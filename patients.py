@@ -75,6 +75,17 @@ class Patients:
             print("Erro ao tentar registrar paciente no json: ", e)
 
 
+# Função para carregar Arquivo JSON
+def load_json():
+    try:
+        if os.path.exists(FILE_BASE):
+            with open(FILE_BASE, 'r') as file_json:
+                dados = json.load(file_json)
+                return dados
+    except FileNotFoundError as e:
+        print("Arquivo JSON não encontrado, erro:", e)
+
+
 # Função para Carregar o json e exibir as estatisticas exigidas
 def view_statistics():
     '''
@@ -83,9 +94,7 @@ def view_statistics():
         o Paciente mais novo e mais velho
     '''
     try:
-        if os.path.exists(FILE_BASE):
-            with open(FILE_BASE, 'r') as file_json:
-                dados = json.load(file_json)
+        dados = load_json()
 
         print(f"\nNúmero Total de Pacientes: {dados['last_id']}")
 
@@ -104,12 +113,29 @@ def view_statistics():
     except Exception as e:
         print("Erro ao exibir as estatísticas: ", e)
 
-def find_patient(name):
-    '''
-        Buscar Paciente pelo novo
-    '''
-    pass
 
+# Função para buscar paciente pelo nome
+def find_patient(input_name=input("Digite o nome do Paciente: ")):
+    '''
+        Buscar Paciente pelo nome
+    '''
+    try:
+        dados = load_json()
+
+        dados_patients = dados['patients']
+
+        person_find = None
+
+        for person in dados_patients:
+            if person['name'] == input_name:
+                person_find = person
+                break
+        print("\nPaciente Encontrado:")
+        for key, value in person_find.items():
+            print(f"{key}: {value}")
+
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print("Não Encontrado: ", e)
 
 
 if __name__ == "__main__":
@@ -123,3 +149,5 @@ if __name__ == "__main__":
     paciente_03.register()
 
     view_statistics()
+
+    find_patient()
