@@ -63,13 +63,21 @@ class Patients:
             raise ValueError("o tamanho do número está errado")
         else:
             self._phone = value
-            
+        
     # Método para cadastrar os atributos em um arquivo json
     def register(self):
         try:
             if os.path.exists(FILE_BASE):
                 # Carregar arquivo json antes de salvar novos registros
                 data = load_json()
+                # Verificar se nome e telefone já existem no arquivo json
+                for patient in data['patients']:
+                    if (patient['Nome'].lower() == self.name.strip().lower()
+                        and patient["Telefone"] == self.phone.strip()):
+                        print(f"\nPaciente {patient['Nome']} "
+                              "já está cadastrado!")
+                        print("--" * 30)
+                        return False
             else:
                 data = {"patients": [], "last_id": 0}
 
@@ -78,17 +86,20 @@ class Patients:
             new_id = data["last_id"]
             register_patients = {
                 "ID": new_id,
-                "name": self.name.strip().lower(),
-                "age": self.age,
-                "phone": self.phone.strip()
+                "Nome": self.name.strip().lower(),
+                "Idade": self.age,
+                "Telefone": self.phone.strip()
             }
 
             data["patients"].append(register_patients)
 
+            print(f"\nID {new_id} - Cadastro de {self.name} feito com sucesso!")
+            print("--" * 30)
+
             with open(FILE_BASE, 'w', encoding="utf-8") as file:
                 return json.dump(data, file,
                                  ensure_ascii=False, indent=2)
-
+        
         except (json.JSONDecodeError, FileNotFoundError) as e:
             print("Erro ao tentar registrar paciente no json: ", e)
 
@@ -105,17 +116,17 @@ def view_statistics():
 
         print(f"\nNúmero Total de Pacientes: {dados['last_id']}")
 
-        patients_ = [dado['age'] for dado in dados['patients']]
+        patients_ = [dado['Idade'] for dado in dados['patients']]
         media_patients = sum(patients_) / len(patients_)
         print(f"\nMédia de idade dos Pacientes: {int(media_patients)} Anos")
 
-        min_age = min(dados['patients'], key=lambda x: x['age'])
-        max_age = max(dados['patients'], key=lambda x: x['age'])
+        min_age = min(dados['patients'], key=lambda x: x['Idade'])
+        max_age = max(dados['patients'], key=lambda x: x['Idade'])
 
         print("\nPaciente mais novo: "
-              f"{min_age['name']} com {min_age['age']} anos")
+              f"{min_age['Nome']} com {min_age['Idade']} anos")
         print("\nPaciente mais velho: "
-              f"{max_age['name']} com {max_age['age']} anos")
+              f"{max_age['Nome']} com {max_age['Idade']} anos")
 
     except Exception as e:
         print("Erro ao exibir as estatísticas: ", e)
@@ -136,7 +147,7 @@ def find_patient():
         person_find = None
 
         for person in dados_patients:
-            if person['name'] == input_name:
+            if person['Nome'] == input_name:
                 person_find = person
                 break
         print("\nPaciente Encontrado:")
@@ -148,7 +159,7 @@ def find_patient():
 
 
 if __name__ == "__main__":
-    # dados ficticios para teste
+    # Dados ficticios para teste
     paciente_01 = Patients("Anderson", 32, "83999659911")
     paciente_02 = Patients("Maria", 65, "83996565651")
     paciente_03 = Patients("Genival", 58, "83995595541")
@@ -159,4 +170,5 @@ if __name__ == "__main__":
 
     paciente_04 = Patients("Fulano", 85, "83999559951").register()
 
+    paciente_05 = Patients("Cicrano", 20, "83948554466").register()
     view_statistics()
