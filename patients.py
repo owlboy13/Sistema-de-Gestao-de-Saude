@@ -1,12 +1,15 @@
 import json
 from pathlib import Path
 import os
+import pandas as pd
 
 
 FILE_BASE = Path(__file__).parent / "register_patients.json"
 
+DELETE_BASE = Path(__file__).parent / "patients_deleted.json"
 
-# Função para carregar Arquivo JSON
+
+# Função para carregar Arquivo JSON (existente)
 def load_json():
     try:
         with open(FILE_BASE, 'r') as file_json:
@@ -14,6 +17,10 @@ def load_json():
             return dados
     except FileNotFoundError as e:
         print("Arquivo JSON não encontrado, erro:", e)
+
+
+def print_bar():
+    return print("--" * 30)
 
 
 class Patients:
@@ -76,10 +83,11 @@ class Patients:
                         and patient["Telefone"] == self.phone.strip()):
                         print(f"\nPaciente {patient['Nome']} "
                               "já está cadastrado!")
-                        print("--" * 30)
                         return False
             else:
                 data = {"patients": [], "last_id": 0}
+
+                
 
             # Criando um novo registro de paciente
             data["last_id"] += 1
@@ -94,7 +102,7 @@ class Patients:
             data["patients"].append(register_patients)
 
             print(f"\nID {new_id} - Cadastro de {self.name} feito com sucesso!")
-            print("--" * 30)
+            print_bar()
 
             with open(FILE_BASE, 'w', encoding="utf-8") as file:
                 return json.dump(data, file,
@@ -114,7 +122,9 @@ def view_statistics():
     try:
         dados = load_json()
 
-        print(f"\nNúmero Total de Pacientes: {dados['last_id']}")
+        print_bar()
+        print("\n -- Estatísticas -- \n")
+        print(f"\nNúmero Total de Pacientes: {len(dados['patients'])}")
 
         patients_ = [dado['Idade'] for dado in dados['patients']]
         media_patients = sum(patients_) / len(patients_)
@@ -126,7 +136,9 @@ def view_statistics():
         print("\nPaciente mais novo: "
               f"{min_age['Nome']} com {min_age['Idade']} anos")
         print("\nPaciente mais velho: "
-              f"{max_age['Nome']} com {max_age['Idade']} anos")
+              f"{max_age['Nome']} com {max_age['Idade']} anos\n")
+        
+        print_bar()
 
     except Exception as e:
         print("Erro ao exibir as estatísticas: ", e)
@@ -150,25 +162,70 @@ def find_patient():
             if person['Nome'] == input_name:
                 person_find = person
                 break
+        print_bar()
         print("\nPaciente Encontrado:")
         for key, value in person_find.items():
             print(f"{key}: {value}")
+        print_bar()
 
     except (FileNotFoundError, json.JSONDecodeError) as e:
         print("Não Encontrado: ", e)
 
 
+def list_patients():
+    try:
+        print_bar()
+        print("\nTodos os pacientes cadastrados: \n")
+        file_json = pd.read_json("register_patients.json")
+        df = pd.json_normalize(file_json['patients'])
+        df = pd.DataFrame(df)
+        print(df)
+        print_bar()
+    except TypeError as e:
+        print("Erro: ", e)
+
+
+def del_patient():
+    try:
+        dados = load_json()
+        dados_patients = dados['patients']
+        print_bar()
+        del_ = int(input("Digite o ID do Paciente que deseja excluir: ")) - 1
+        for item in dados_patients:
+            if item.get('ID') == del_:
+                removed_patient = dados_patients.pop(del_)
+                print(f"Paciente {removed_patient['Nome']}"
+                      "deletado com sucesso")
+                break
+        # Salvar Registro de Paciente deletado
+        with open(DELETE_BASE, "w", encoding='utf-8') as file2:
+            json.dump(removed_patient, file2,
+                      indent=2, ensure_ascii=True)
+        # Salvar novo registro sem o paciente deletado
+        with open(FILE_BASE, 'w', encoding='utf-8') as file:
+            json.dump(dados, file, indent=2, ensure_ascii=True)
+        print_bar()
+    except ValueError as e:
+        print("Erro ao excluir paciente", e)
+    except TypeError as e:
+        print("Erro de tipo:", e)
+
+
+# Dados ficticios para teste
 if __name__ == "__main__":
-    # Dados ficticios para teste
-    paciente_01 = Patients("Anderson", 32, "83999659911")
-    paciente_02 = Patients("Maria", 65, "83996565651")
-    paciente_03 = Patients("Genival", 58, "83995595541")
 
-    paciente_01.register()
-    paciente_02.register()
-    paciente_03.register()
+    # paciente_01 = Patients("Anderson", 32, "83999659911")
+    # paciente_02 = Patients("Maria", 65, "83996565651")
+    # paciente_03 = Patients("Genival", 58, "83995595541")
+    # paciente_01.register()
+    # paciente_02.register()
+    # paciente_03.register()
+    # paciente_04 = Patients("Fulano", 85, "83999559951").register()
+    # paciente_05 = Patients("Cicrano", 20, "83948554466").register()
 
-    paciente_04 = Patients("Fulano", 85, "83999559951").register()
 
-    paciente_05 = Patients("Cicrano", 20, "83948554466").register()
-    view_statistics()
+    # view_statistics()
+
+    #find_patient()
+
+    del_patient()
